@@ -20,7 +20,7 @@ let database = null;
 // 2.Verifica se está recebendo alguma coisa no body;
 // 3.Verifica o header -> se possui um cadastro com o token;
 // 3.Verifica se o produto existe na coleção products;
-// 4.Adiciona as informações desse produto tiradas da coleção products + token eviado a coleção bag;
+// 4.Adiciona as informações desse produto tiradas da coleção products + token enviado a coleção bag;
 
 const nameSchema = joi.object({
     name: joi.string()
@@ -65,9 +65,32 @@ app.post('/bag', async (req, res) => {
         mongoClient.close();
 })
 
-// ----------------------------------------------
+// -------------------GET /BAG-----------------------
 
-app
+// 1. Recebe o token associado ao usuário vindo do header;
+// 2. Valida o token e verifica se existe o token na coleção users;
+// 3. Busca os produtos escolhidos pelo token do usuário;
+// 4. Envia para o front.
+
+app.get('/bag', async (req, res) => {
+    const { authorization } = req.headers;
+    const token = authorization?.replace('Bearer ', '');
+    try {
+        await mongoClient.connect();
+        database = mongoClient.db(process.env.DATABASE);
+        const tokenValidation = await database.collection("signin").findOne({token}); //Verificar o nome que a Manu escolheu para a coleção
+        if(!tokenValidation){
+            res.status(401).send('Token invalido');
+            return;
+        }
+        const selectedProducts = await database.collection("selectedProducts").find({token}).toArray(); 
+        res.status(201).send(selectedProducts);
+    } catch (err) {
+        res.status(500).send('Erro interno do servidor');
+    }
+})
+
+
 
 app.listen(process.env.DOOR, () => {
     console.log(`|--------------------------------------|`);
