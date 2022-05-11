@@ -101,13 +101,7 @@ app.get('/bag', async (req, res) => {
 
 app.post('/checkout', async (req, res) => {
     const { authorization } = req.headers;
-    const { name } = req.body;
     const token = authorization?.replace('Bearer ', '');
-    const validation = nameSchema.validate({name});
-    if(validation.error){
-        res.status(422).send("Insira um nome válido");
-        return;
-    }
     try {
         await mongoClient.connect();
         database = mongoClient.db(process.env.DATABASE);
@@ -116,20 +110,19 @@ app.post('/checkout', async (req, res) => {
             res.status(401).send('Token invalido');
             return;
         }
-        const contains = await database.collection("bag").findOne({token});
+        const contains = await database.collection("bag").find({token}).toArray();
         if(!contains){
             res.status(404).send("Verifique se todos os prdutos estão disponíveis");
             mongoClient.close();
             return;
         }
-        await database.collection("orders").insertOne(contains);
+        await database.collection("orders").insertMany(contains);
         res.status(201).send('Produto salvo');
     } catch (err) {
         res.status(500).send('Erro interno do servidor');
     }
     mongoClient.close();
 })
-
 
 
 app.listen(process.env.DOOR, () => {
