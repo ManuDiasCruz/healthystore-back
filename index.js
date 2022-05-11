@@ -1,4 +1,3 @@
- 
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
@@ -29,9 +28,9 @@ const nameSchema = joi.object({
 
 app.post('/bag', async (req, res) => {
     const { authorization } = req.headers;
-    const { name } = req.body;
+    const productName = req.body.name;
     const token = authorization?.replace('Bearer ', '');
-    const validation = nameSchema.validate({name});
+    const validation = nameSchema.validate({name: productName});
     if(validation.error){
         res.status(422).send("Insira um nome válido");
         return;
@@ -39,12 +38,12 @@ app.post('/bag', async (req, res) => {
     try {
         await mongoClient.connect();
         database = mongoClient.db(process.env.DATABASE);
-        const tokenValidation = await database.collection("signin").findOne({token}); //Verificar o nome que a Manu escolheu para a coleção
+        const tokenValidation = await database.collection("users").findOne({token}); //Verificar o nome que a Manu escolheu para a coleção
         if(!tokenValidation){
             res.status(401).send('Token invalido');
             return;
         }
-        const contains = await database.collection("products").findOne({name});
+        const contains = await database.collection("products").findOne({name: productName});
         if(!contains){
             res.status(404).send("Esse produto não está disponível");
             mongoClient.close();
@@ -58,12 +57,14 @@ app.post('/bag', async (req, res) => {
             token
         }
         await database.collection("bag").insertOne(chosenProduct);
+        console.log(chosenProduct)
         res.status(201).send('Produto salvo');
     } catch (err) {
-        res.status(500).send('Erro interno do servidor');
+        res.status(500).send('Erro interno do servidor' + err);
     }
         mongoClient.close();
 })
+
 
 // -------------------GET /BAG-----------------------
 
@@ -78,12 +79,12 @@ app.get('/bag', async (req, res) => {
     try {
         await mongoClient.connect();
         database = mongoClient.db(process.env.DATABASE);
-        const tokenValidation = await database.collection("signin").findOne({token}); //Verificar o nome que a Manu escolheu para a coleção
+        const tokenValidation = await database.collection("users").findOne({token}); //Verificar o nome que a Manu escolheu para a coleção
         if(!tokenValidation){
             res.status(401).send('Token invalido');
             return;
         }
-        const selectedProducts = await database.collection("selectedProducts").find({token}).toArray(); 
+        const selectedProducts = await database.collection("bag").find({token}).toArray(); 
         res.status(201).send(selectedProducts);
     } catch (err) {
         res.status(500).send('Erro interno do servidor');
@@ -94,10 +95,9 @@ app.get('/bag', async (req, res) => {
 // -------------------POST /CHECKOUT-----------------------
 
 // 1. Recebe o token associado ao usuário vindo do header e o nome do produto vindo do body;
-// 2. Valida o nome e verifica se o produto existe na coleção products; 
-// 3. Valida o token e confere se tem um user associado a ele;
-// 4. Busca os produtos escolhidos pelo token do usuário na coleção bag;
-// 5. Salva na coleção checkout as informações do produto + token
+// 2. Valida o token e confere se tem um user associado a ele;
+// 3. Busca os produtos escolhidos pelo token do usuário na coleção bag;
+// 4. Salva na coleção checkout as informações do produto + token
 
 app.post('/checkout', async (req, res) => {
     const { authorization } = req.headers;
@@ -105,7 +105,7 @@ app.post('/checkout', async (req, res) => {
     try {
         await mongoClient.connect();
         database = mongoClient.db(process.env.DATABASE);
-        const tokenValidation = await database.collection("signin").findOne({token}); //Verificar o nome que a Manu escolheu para a coleção
+        const tokenValidation = await database.collection("users").findOne({token}); //Verificar o nome que a Manu escolheu para a coleção
         if(!tokenValidation){
             res.status(401).send('Token invalido');
             return;
@@ -117,12 +117,45 @@ app.post('/checkout', async (req, res) => {
             return;
         }
         await database.collection("orders").insertMany(contains);
+        console.log(contains);
         res.status(201).send('Produto salvo');
     } catch (err) {
         res.status(500).send('Erro interno do servidor');
     }
     mongoClient.close();
 })
+
+// -------------------GET /CHECKOUT-----------------------
+
+// 1. Recebe o token associado ao usuário vindo do header e o nome do produto vindo do body;
+// 2. Valida o token e confere se tem um user associado a ele;
+// 3. Busca os produtos comprados pelo token do usuário na coleção orders;
+// 4. Devolver os produtos comprados pelo usuário
+
+app.get('/checkout', async (req, res) => {
+    const { authorization } = req.headers;
+    const token = authorization?.replace('Bearer ', '');
+    try {
+        await mongoClient.connect();
+        database = mongoClient.db(process.env.DATABASE);
+        const tokenValidation = await database.collection("users").findOne({token}); //Verificar o nome que a Manu escolheu para a coleção
+        if(!tokenValidation){
+            res.status(401).send('Token invalido');
+            return;
+        }
+        const contains = await database.collection("orders").find({token}).toArray();
+        if(!contains){
+            res.status(404).send("Não há pedidos");
+            mongoClient.close();
+            return;
+        }
+        res.status(201).send(contains);
+    } catch (err) {
+        res.status(500).send('Erro interno do servidor');
+    }
+    mongoClient.close();
+})
+
 
 
 app.listen(process.env.DOOR, () => {
