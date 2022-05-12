@@ -186,7 +186,7 @@ app.get('/checkout', async (req, res) => {
     mongoClient.close();
 })
 
-// Running server at env.DOOR
+// Running server at env.PORT
 const port = process.env.PORT
 app.listen(port, () => {
     console.log(`|-----------------------------------|`);
