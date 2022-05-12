@@ -1,6 +1,14 @@
-import joi from "joi"
+import {productSchema} from "../schemas/productSchema.js"
 
-export async function validateTransaction(req, res, next){
+export async function validateProduct(req, res, next){
+    console.log("ValidateProduct")
+    const {error} = productSchema.validate(req.body)
+    if (error) return res.sendStatus(422) // unprocessable entity
+
+    next()
+}
+
+/* export async function validateTransaction(req, res, next){
     const transactionSchema = joi.object({
         description: joi.string().required(),
         value: joi.number().required(),
@@ -14,4 +22,4 @@ export async function validateTransaction(req, res, next){
     res.locals.transaction = transaction
 
     next()
-}
+} */

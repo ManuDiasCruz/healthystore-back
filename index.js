@@ -4,6 +4,7 @@ import cors from "cors"
 
 // Internal dependency
 import authentRouter from "./routes/authentRouter.js"
+import productRouter from "./routes/productRouter.js"
 
 // Enviroment settings
 dotenv.config()
@@ -14,10 +15,10 @@ app.use(cors())
 
 // Routes
 app.use(authentRouter)
-app.use(transactionRouter)
+app.use(productRouter)
 
 // Running server at env.DOOR
-const door = process.env.DOOR || 5000
+const door = process.env.DOOR
 app.listen(door, () => {
     console.log(`Server running at door ${door}.`)
 })
