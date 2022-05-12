@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import joi from "joi";
-import { MongoClient } from "mongodb";
+import { MongoClient, ObjectId } from "mongodb";
 
 const app = express();
 app.use(express.json());
@@ -20,11 +20,6 @@ let database = null;
 // 3.Verifica o header -> se possui um cadastro com o token;
 // 4.Verifica se o produto existe na coleção products;
 // 5.Adiciona as informações desse produto tiradas da coleção products + token enviado a coleção bag;
-
-const nameSchema = joi.object({
-    name: joi.string()
-        .required()
-})
 
 app.post('/bag', async (req, res) => {
     const { authorization } = req.headers;
@@ -92,6 +87,32 @@ app.get('/bag', async (req, res) => {
     mongoClient.close();
 })
 
+// ------------------DELETE /BAG---------------------------
+
+// 1. Recebe o id do produto a ser excluído 
+// 2. Valida se existe um produto com esse id
+// 3. Deleta o produto da coleção bag
+
+app.delete('/bag/:id', async (req, res) => {
+    console.log(req.params)
+    const id = new ObjectId(req.params.id);
+    console.log(id);
+    try {
+        await mongoClient.connect();
+        database = mongoClient.db(process.env.DATABASE);
+        const validateId = await database.collection("bag").findOne({_id: id})
+        if(!validateId){
+            res.status(401).send('Token invalido');
+            return;
+        }
+        await database.collection("bag").deleteOne({_id: id});
+        res.status(200).send("Produto apagado");
+    } catch (error) {
+        res.status(500).send('Erro interno do servidor');
+    }
+    mongoClient.close();
+  });
+
 // -------------------POST /CHECKOUT-----------------------
 
 // 1. Recebe o token associado ao usuário vindo do header e o nome do produto vindo do body;
@@ -157,9 +178,8 @@ app.get('/checkout', async (req, res) => {
 })
 
 
-
 app.listen(process.env.DOOR, () => {
-    console.log(`|--------------------------------------|`);
-    console.log(`| Running at https://localhost:${process.env.DOOR}    |`);
-    console.log(`|--------------------------------------|`);
+    console.log(`|-----------------------------------|`);
+    console.log(`| Running at https://localhost:${process.env.DOOR} |`);
+    console.log(`|-----------------------------------|`);
 });
