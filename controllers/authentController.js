@@ -5,17 +5,16 @@ import db from "./../db.js"
 
 export async function signUp(req, res){
     const {username, email, password, repeatedPassword} = req.body
-
     try {
         // There is already a registered user with this email
         const user = await db.collection("users").findOne({email})
-		if (user) return res.status(409).send(`There is already a user with this ${email}.`)
-
+		if (user) return res.status(409).send(`Já existe uma conta com o email: ${email}.`)
         // Inserting the user
         const SALT = 10
         const encryptedPassword = bcrypt.hashSync(password, SALT)
         await db.collection("users").insertOne({username, email, password: encryptedPassword})
         res.sendStatus(201) // created
+        console.log("created")
     } catch (error) {
         console.log("Error creating new user.", error)
         res.status(500).send("Error creatig new user.")
@@ -31,7 +30,7 @@ export async function signIn(req, res){
 
         if (user && bcrypt.compareSync(password, user.password)){
             const token = uuid()
-            await db.collection("sessions").insertOne({token, userId:user._id})
+            await db.collection("sessions").insertOne({token, userId: user._id})
             return res.send({token, name: user.name})
         } 
 

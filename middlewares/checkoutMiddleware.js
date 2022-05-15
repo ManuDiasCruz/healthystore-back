@@ -1,31 +1,31 @@
 import db from "./../db.js"
+import { checkoutSignUpSchema } from "../schemas/checkoutSchema.js"
 
 export async function postCheckoutMiddle(req, res, next) {
     const { authorization } = req.headers;
-    const token = authorization?.replace('Bearer ', '');
+    const token = authorization?.replace('Bearer ', '').trim();
+     if (!token) {
+        return res.sendStatus(401);
+      }
+    const validation = checkoutSignUpSchema.validate(req.body);
+    if(validation.error){
+      res.status(422).send("Insira um nome válido");
+      return;
+  }
     try {
-        const tokenValidation = await db.collection("users").findOne({token}); //Verificar o nome que a Manu escolheu para a coleção
-        if(!tokenValidation){
+        const session = await db.collection("sessions").findOne({ token });
+        if (!session) {
             res.status(401).send('Token invalido');
             return;
         }
+        const user = await db.collection("users").findOne({ _id: session.userId });
+          if (!user) {
+            return res.sendStatus("Não foi possível achar um user com esses dados");
+          }
+          delete user.password;
+          res.locals.user = user;
     } catch (err) {
-        res.status(500).send('Erro interno do servidor');
-    }
-    next();
-}
-
-export async function getCheckoutMiddleware(req, res, next) {
-    const { authorization } = req.headers;
-    const token = authorization?.replace('Bearer ', '');
-    try {
-        const tokenValidation = await db.collection("users").findOne({token}); //Verificar o nome que a Manu escolheu para a coleção
-        if(!tokenValidation){
-            res.status(401).send('Token invalido');
-            return;
-        }
-    } catch (err) {
-        res.status(500).send('Erro interno do servidor');
+        res.status(500).send('Erro interno do servidor' + err);
     }
     next();
 }
