@@ -12,7 +12,7 @@ productRouter.post("/register-product", validateProduct, addProduct)
 
 // Find items at Products Database
 productRouter.get("/products", getProducts)
-productRouter.get("/products-category", getProductsByCategory)
-productRouter.get("/product", getProduct)
+productRouter.get("/:category", getProductsByCategory)
+productRouter.get("/product/:productId", getProduct)
 
 export default productRouter

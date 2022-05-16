@@ -31,7 +31,9 @@ export async function getProducts(req, res){
 
 export async function getProductsByCategory(req, res){
     console.log("GetProductsByCategory");
-    const {category} = req.body;
+    // const {category} = req.body;
+    const { category } = req.params;
+    console.log("Peguei a categoria: ", req.params)
     try {
         const products = await db.collection("products").find({category: category}).toArray();
         res.send(products);
@@ -43,7 +45,10 @@ export async function getProductsByCategory(req, res){
 
 export async function getProduct(req, res){
     console.log("GetProduct");
-    const {name} = req.body;
+    //const {name} = req.body;
+    const { name } = req.params;
+    name = name.replaceAll("-", " ")
+    console.log("Peguei o produto: ", req.params)
     try {
         const products = await db.collection("products").find({name: {$regex: name}}).toArray();
         res.send(products);
