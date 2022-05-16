@@ -3,7 +3,6 @@ import { schema } from "../schemas/nameSchema.js";
 import { ObjectId } from "mongodb";
 
 export async function postBagMiddleware(req, res, next) {
-    console.log("middlewares")
     const { authorization } = req.headers;
     const { productName, quantity } = req.body;
     const token = authorization?.replace('Bearer ', '').trim();
@@ -35,7 +34,6 @@ export async function postBagMiddleware(req, res, next) {
 
 export async function getBagMiddleware(req, res, next) {
     const { authorization } = req.headers;
-    console.log("getbagmiddle" + authorization)
     const token = authorization?.replace('Bearer ', '').trim();
     if (!token) {
         return res.sendStatus(401);

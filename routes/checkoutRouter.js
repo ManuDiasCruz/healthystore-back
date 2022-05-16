@@ -5,8 +5,6 @@ import { postCheckoutMiddle, getCheckoutMiddleware } from "../middlewares/checko
 
 const checkoutRouter = Router()
 
-console.log("checkout")
-
 checkoutRouter.post("/checkout", postCheckoutMiddle, postCheckout)
 checkoutRouter.get("/checkout", getCheckoutMiddleware, getCheckout)
 

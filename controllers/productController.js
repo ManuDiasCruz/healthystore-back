@@ -31,30 +31,22 @@ export async function getProducts(req, res){
 }
 
 export async function getProductsByCategory(req, res){
-    console.log("GetProductsByCategory");
     const category = req.params.category;
-    console.log("Peguei a categoria: ", req.params.category)
     try {
         const products = await db.collection("products").find({category: category}).toArray();
         res.send(products);
         console.log(products)
     } catch (error) {
-        console.log(`Error getting items at Products Database by ${category} category.`, error)
         res.status(500).send(`Error getting items at Products Database by ${category} category.`)
     }
 }
 
 export async function getProduct(req, res){
-    console.log("aqui");
-    console.log("Peguei o produto: ", req.params.productId)
     const id = new ObjectId(req.params.productId);
-    console.log(id)
     try {
         const products = await db.collection("products").findOne({ _id: id });
         res.send(products);
-        console.log(products)
     } catch (error) {
-        console.log(`Error getting product at Products Database.`, error)
         res.status(500).send(`Error getting product at Products Database.`)
     }
 }

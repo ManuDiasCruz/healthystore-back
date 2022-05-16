@@ -3,7 +3,6 @@ import { ObjectId } from "mongodb";
 import dayjs from "dayjs";
 
 export async function postBag(req, res) {
-    console.log("postbag")
     const { productName, quantity } = req.body;
     const { user } = res.locals;
     try {
@@ -28,20 +27,16 @@ export async function postBag(req, res) {
 }
 
 export async function getBag(req, res) {
-    console.log("getbag")
     const { user } = res.locals;
     try {
         const selectedProducts = await db.collection("bag").find({ id: user._id }).toArray();
-        const reverseProducts = selectedProducts.slice(0).reverse(); 
-        console.log(reverseProducts)
-        res.status(201).send(reverseProducts);
+        res.status(201).send(selectedProducts);
     } catch (err) {
         res.status(500).send('Erro interno do servidor');
     }
 }
 
 export async function deleteBag(req, res) {
-    console.log("deletebag")
     const id = new ObjectId(req.params.id);
     try {
         await db.collection("bag").deleteOne({ _id: id });

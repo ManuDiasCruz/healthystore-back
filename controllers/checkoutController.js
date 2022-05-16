@@ -29,7 +29,6 @@ export async function postCheckout(req, res) {
 }
 
 export async function getCheckout(req, res) {
-    console.log("getcheckout")
     const { user } = res.locals;
     try {
         const contains = await db.collection("orders").find({ id: user._id }).toArray();

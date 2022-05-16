@@ -2,7 +2,6 @@ import db from "./../db.js"
 import { checkoutSignUpSchema } from "../schemas/checkoutSchema.js"
 
 export async function postCheckoutMiddle(req, res, next) {
-  console.log("checkout middle")
     const { authorization } = req.headers;
     const token = authorization?.replace('Bearer ', '').trim();
      if (!token) {
