@@ -18,7 +18,7 @@ export async function postBag(req, res) {
             value,
             image,
             quantity,
-            id: user._id
+            id: user._id                    
         }
         await db.collection("bag").insertOne(chosenProduct);
         res.status(201).send('Produto salvo');
@@ -33,6 +33,7 @@ export async function getBag(req, res) {
     try {
         const selectedProducts = await db.collection("bag").find({ id: user._id }).toArray();
         const reverseProducts = selectedProducts.slice(0).reverse(); 
+        console.log(reverseProducts)
         res.status(201).send(reverseProducts);
     } catch (err) {
         res.status(500).send('Erro interno do servidor');

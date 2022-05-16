@@ -31,11 +31,11 @@ export async function signIn(req, res){
         if (user && bcrypt.compareSync(password, user.password)){
             const token = uuid()
             await db.collection("sessions").insertOne({token, userId: user._id})
-            return res.send({token, name: user.name})
+            console.log(token)
+            console.log(user.username)
+            return res.send({token, name: user.username})
         } 
-
         res.sendStatus(404)
-
     } catch (error) {
         console.log("Error logging in user.", error)
         res.status(500).send("Error logging in user.")
