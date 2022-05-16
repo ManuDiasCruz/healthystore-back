@@ -1,4 +1,5 @@
 import db from "./../db.js"
+import { ConnectionClosedEvent, ObjectId } from "mongodb";
 
 export async function addProduct(req, res){
     console.log("AddProduct");
@@ -46,14 +47,15 @@ export async function getProductsByCategory(req, res){
 export async function getProduct(req, res){
     console.log("GetProduct");
     //const {name} = req.body;
-    const { name } = req.params;
-    name = name.replaceAll("-", " ")
-    console.log("Peguei o produto: ", req.params)
+    const id = new ObjectId(req.params.productId);
+    console.log(id)
+    console.log("Peguei o produto: ", req.params.productId)
     try {
-        const products = await db.collection("products").find({name: {$regex: name}}).toArray();
+        const products = await db.collection("products").findOne({ _id: id });
         res.send(products);
+        console.log(products)
     } catch (error) {
-        console.log(`Error getting ${name} at Products Database.`, error)
-        res.status(500).send(`Error getting ${name} at Products Database.`)
+        console.log(`Error getting product at Products Database.`, error)
+        res.status(500).send(`Error getting product at Products Database.`)
     }
 }
